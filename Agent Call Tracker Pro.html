@@ -1,0 +1,1619 @@
+<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+  <!-- Content Security Policy (tightened; no inline event handlers, no unsafe-eval) -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self' data: blob: https://cdn.jsdelivr.net;
+    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' data: blob:;
+    connect-src 'self';
+    frame-src 'self';
+    worker-src 'self';
+    upgrade-insecure-requests; block-all-mixed-content;
+  ">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <title>Agent Call Tracker Pro v3.5</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg: #0b1220;           /* dark default (auto follows system) */
+      --card: #0f172a;
+      --muted: #1e293b;
+      --text: #e2e8f0;
+      --subtle:#94a3b8;
+      --accent:#4f46e5;
+      --accent-2:#22c55e;
+      --accent-3:#06b6d4;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --border:#243043;
+      --focus:#93c5fd;
+      --ok:#10b981;
+      --shadow: 0 4px 10px rgba(0,0,0,.35);
+      --ring: 0 0 0 3px rgba(59,130,246,.35);
+      --row: 40px;
+    }
+    [data-theme="light"]{
+      --bg:#f7f9fc; --card:#ffffff; --muted:#f3f4f6; --text:#1f2937; --subtle:#64748b;
+      --accent:#2563eb; --accent-2:#16a34a; --accent-3:#0891b2; --danger:#dc2626; --warn:#d97706; --border:#e5e7eb;
+      --shadow: 0 2px 8px rgba(0,0,0,.08);
+      --ring: 0 0 0 3px rgba(37,99,235,.25);
+      --ok:#059669;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;background:var(--bg);color:var(--text);font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      display:flex;flex-direction:column;min-height:100%;
+    }
+    a{color:inherit}
+    header{
+      background:linear-gradient( to right, var(--card), var(--muted) );
+      border-bottom:1px solid var(--border);
+      padding:.6rem .9rem; display:flex; align-items:center; gap:.8rem; flex-wrap:wrap;
+    }
+    header h1{margin:.2rem 0; font-size:1.15rem;}
+    .spacer{flex:1}
+    .toolbar{display:flex; gap:.5rem; align-items:center; flex-wrap:wrap}
+    label{font-size:.85rem; display:block}
+    input,select,button,textarea{
+      appearance:none; -webkit-appearance:none;
+      background:var(--card); color:var(--text);
+      border:1px solid var(--border); border-radius:6px;
+      padding:.45rem .55rem; font-size:.92rem;
+      outline:none; width:100%;
+    }
+    input:focus,select:focus,textarea:focus,button:focus{box-shadow: var(--ring); border-color: var(--focus)}
+    button{background:var(--accent); color:white; border:none; cursor:pointer; font-weight:600}
+    button.ghost{background:transparent; color:var(--text); border:1px solid var(--border)}
+    button.flat{background:transparent;color:var(--text);border:none}
+    button.danger{background:var(--danger)}
+    button.warn{background:var(--warn)}
+    button.ok{background:var(--ok)}
+    button:disabled{opacity:.6; cursor:not-allowed}
+    .btn-row{display:flex; gap:.5rem; flex-wrap:wrap}
+    main{flex:1; display:grid; gap:1rem; padding:1rem}
+    @media(min-width:1200px){ main{ grid-template-columns: repeat(3, 1fr) } }
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius:10px; padding:1rem; box-shadow:var(--shadow)
+    }
+    .card h2{margin:.2rem 0 1rem; font-size:1.05rem}
+    .row{display:flex; gap:.7rem; align-items:flex-end; flex-wrap:wrap}
+    .col{flex:1 1 200px}
+    .muted{color:var(--subtle); font-size:.85rem}
+    .hr{height:1px;background:var(--border); margin:.7rem 0}
+    table{width:100%; border-collapse:collapse; font-size:.9rem}
+    th,td{border:1px solid var(--border); padding:.45rem .5rem; text-align:left}
+    th{background:var(--muted)}
+    .tag{display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .45rem; border-radius:999px; background:var(--muted); color:var(--text); font-size:.8rem}
+    .tag.ok{background: color-mix(in oklab, var(--ok) 18%, transparent)}
+    .tag.warn{background: color-mix(in oklab, var(--warn) 18%, transparent)}
+    .tag.danger{background: color-mix(in oklab, var(--danger) 18%, transparent)}
+    .chips{display:flex; gap:.35rem; flex-wrap:wrap}
+    .flex{display:flex; gap:.6rem; align-items:center}
+    .wrap{flex-wrap:wrap}
+    .right{margin-left:auto}
+    .small{font-size:.82rem}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+
+    /* Virtualized grid (calls) */
+    .vt{border:1px solid var(--border); border-radius:8px; overflow:hidden;}
+    .vt-header, .vt-row{
+      display:grid; grid-template-columns: 32px 1.2fr 1fr 0.9fr 0.9fr 110px; align-items:center;
+    }
+    .vt-header{background:var(--muted); font-weight:700; padding:.4rem .6rem}
+    .vt-body{position:relative; height:420px; overflow:auto; background:linear-gradient(0deg, transparent, transparent 400px, color-mix(in oklab, var(--muted) 25%, transparent) 400px)}
+    .vt-rail{position:relative; width:100%; height:100%}
+    .vt-row{
+      position:absolute; left:0; right:0; height:var(--row); padding:.35rem .6rem; border-bottom:1px solid var(--border);
+      background:transparent; will-change: transform;
+    }
+    .vt-row:focus-within{ outline:2px solid var(--focus) }
+    .checkbox{width:18px; height:18px}
+    .kbd{border:1px solid var(--border); background:var(--muted); border-radius:4px; padding:0 .35rem; font-size:.8rem}
+
+    /* Charts */
+    .charts{display:grid; gap:1rem}
+    @media(min-width:900px){ .charts{ grid-template-columns: repeat(3, 1fr) } }
+    canvas{max-width:100%; width:100%; height:260px}
+
+    /* Snackbar (Undo) */
+    .snackbar{
+      position: fixed; left: 1rem; bottom: 1rem; background: var(--card); border:1px solid var(--border);
+      padding: .7rem .9rem; border-radius: 10px; box-shadow: var(--shadow); display:flex; gap:1rem; align-items:center;
+      transform: translateY(120%); opacity:0; transition: transform .25s ease, opacity .25s ease;
+      z-index:9999;
+    }
+    .snackbar.show{ transform: translateY(0); opacity:1 }
+    .snackbar .msg{font-size:.95rem}
+    .snackbar .actions{display:flex; gap:.5rem}
+
+    /* Dialog (modal) */
+    dialog{border:none; padding:0; border-radius:12px; background:var(--card); color:var(--text); width:min(600px, 92vw); box-shadow: var(--shadow)}
+    dialog::backdrop{background: rgba(0,0,0,.45)}
+    .modal-header{padding:1rem; border-bottom:1px solid var(--border); font-weight:700}
+    .modal-body{padding:1rem}
+    .modal-footer{padding:1rem; border-top:1px solid var(--border); display:flex; gap:.5rem; justify-content:flex-end}
+
+    /* Footer */
+    footer{padding:.7rem; text-align:center; color:var(--subtle); font-size:.85rem}
+
+    /* Utilities */
+    .grid2{display:grid; gap:.6rem; grid-template-columns: repeat(2, 1fr)}
+    @media(max-width:600px){ .grid2{ grid-template-columns: 1fr } }
+
+    /* Focus visible */
+    :focus-visible{ outline:3px solid var(--focus); outline-offset:2px }
+    .sr-only{ position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0 }
+  </style>
+</head>
+<body>
+  <a href="#main" class="sr-only">Skip to content</a>
+  <header>
+    <h1 aria-label="Agent Call Tracker Pro">Agent Call Tracker Pro</h1>
+    <div class="spacer"></div>
+
+    <div class="toolbar" role="group" aria-label="Global controls">
+      <label class="small">Theme
+        <select id="themeSelect" aria-label="Theme">
+          <option value="auto">Auto</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+
+      <div class="row" style="align-items:center">
+        <label class="small">Dashboard From
+          <input type="date" id="globalFrom" aria-label="Global start date">
+        </label>
+        <label class="small">To
+          <input type="date" id="globalTo" aria-label="Global end date">
+        </label>
+        <button class="ghost" id="clearRangeBtn" aria-label="Clear date range">Clear</button>
+      </div>
+      <button class="ok" id="backupJsonBtn" title="Download full JSON backup">Backup JSON</button>
+      <label class="small" for="restoreJsonInput">
+        <input id="restoreJsonInput" type="file" accept="application/json" style="display:none">
+        <button class="warn" id="restoreJsonBtn">Restore JSON</button>
+      </label>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <!-- Agents -->
+    <section class="card" aria-labelledby="agentsTitle">
+      <h2 id="agentsTitle">Agents</h2>
+
+      <form id="agentForm" class="row" autocomplete="off">
+        <div class="col">
+          <label for="agentNameInput">Agent Name
+            <input id="agentNameInput" placeholder="e.g. Maria Gomez" required="">
+          </label>
+        </div>
+        <div>
+          <button type="submit" aria-label="Add agent">Add Agent</button>
+        </div>
+      </form>
+
+      <div class="hr"></div>
+
+      <div style="overflow:auto" aria-live="polite">
+        <table aria-label="Agents table">
+          <thead>
+            <tr><th>Name</th><th style="width:170px">Actions</th></tr>
+          </thead>
+          <tbody id="agentTbody"></tbody>
+        </table>
+      </div>
+
+      <div class="hr"></div>
+
+      <h3 class="small">Manage Outcomes</h3>
+      <div class="row">
+        <div class="col">
+          <label for="newOutcomeInput">New Outcome
+            <input id="newOutcomeInput" placeholder="e.g. Follow-up">
+          </label>
+        </div>
+        <div>
+          <button type="button" id="addOutcomeBtn">Add Outcome</button>
+        </div>
+      </div>
+      <div class="chips" id="outcomeChips" aria-label="Current outcomes"></div>
+      <p class="muted small">Outcomes appear in the Add Call form and analytics. You can remove custom outcomes anytime (built-ins can be hidden by renaming).</p>
+    </section>
+
+    <!-- Add Call -->
+    <section class="card" aria-labelledby="callsTitle">
+      <h2 id="callsTitle">Add Call</h2>
+      <form id="callForm" class="grid2" autocomplete="off">
+        <div>
+          <label for="callAgent">Agent
+            <input list="agentList" id="callAgent" required="" aria-describedby="agentHelp" placeholder="Pick or type a name">
+            <datalist id="agentList"></datalist>
+          </label>
+          <div id="agentHelp" class="muted small">Type a new agent name to add it on save.</div>
+        </div>
+        <div>
+          <label for="callDate">Date &amp; Time
+            <input type="datetime-local" id="callDate" required="">
+          </label>
+        </div>
+        <div>
+          <label for="callDuration">Duration (minutes)
+            <input type="number" id="callDuration" min="0" step="0.1" required="">
+          </label>
+        </div>
+        <div>
+          <label for="callOutcome">Outcome
+            <select id="callOutcome"></select>
+          </label>
+        </div>
+        <div style="grid-column:1/-1; display:flex; gap:.5rem; justify-content:flex-end">
+          <button type="reset" class="ghost">Reset</button>
+          <button type="submit">Add Call</button>
+        </div>
+      </form>
+
+      <div class="hr"></div>
+
+      <h3 class="small">Call Logs</h3>
+
+      <div class="row wrap">
+        <label class="small">Filter: Agent
+          <select id="filterAgent">
+            <option value="">All</option>
+          </select>
+        </label>
+        <label class="small">Outcome
+          <select id="filterOutcome">
+            <option value="">All</option>
+          </select>
+        </label>
+        <label class="small">From
+          <input type="date" id="filterFrom">
+        </label>
+        <label class="small">To
+          <input type="date" id="filterTo">
+        </label>
+        <label class="small">Sort
+          <select id="sortBy">
+            <option value="date_desc">Date ↓</option>
+            <option value="date_asc">Date ↑</option>
+            <option value="dur_desc">Duration ↓</option>
+            <option value="dur_asc">Duration ↑</option>
+          </select>
+        </label>
+        <div class="spacer"></div>
+        <div class="btn-row">
+          <button class="ghost" id="selectAllBtn">Select All</button>
+          <button class="danger" id="deleteSelectedBtn" disabled="">Delete Selected</button>
+          <button class="ghost" id="exportCallsCsvBtn">Export Calls CSV</button>
+        </div>
+      </div>
+
+      <!-- Virtualized list -->
+      <div class="vt" aria-label="Calls list" id="callsVt">
+        <div class="vt-header" role="row">
+          <div><input type="checkbox" id="selectAllChk" class="checkbox" aria-label="Select all"></div>
+          <div class="small">Agent</div>
+          <div class="small">Date &amp; Time</div>
+          <div class="small">Duration</div>
+          <div class="small">Outcome</div>
+          <div class="small" style="text-align:right; padding-right:.3rem">Actions</div>
+        </div>
+        <div class="vt-body" id="vtBody" role="grid" aria-rowcount="0" aria-colcount="6">
+          <div class="vt-rail" id="vtRail" style="height:0"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Incoming Volumes -->
+    <section class="card" aria-labelledby="volTitle">
+      <h2 id="volTitle">Add Incoming Volume</h2>
+      <form id="volForm" class="grid2" autocomplete="off">
+        <div>
+          <label for="volStart">Start
+            <input type="date" id="volStart" required="">
+          </label>
+        </div>
+        <div>
+          <label for="volEnd">End
+            <input type="date" id="volEnd" required="">
+          </label>
+        </div>
+        <div>
+          <label for="volTotal">Total Incoming Calls
+            <input type="number" id="volTotal" min="0" required="">
+          </label>
+        </div>
+        <div style="display:flex; gap:.5rem; align-items:flex-end; justify-content:flex-end">
+          <button type="reset" class="ghost">Reset</button>
+          <button type="submit">Add Volume</button>
+        </div>
+      </form>
+
+      <div class="hr"></div>
+
+      <div style="overflow:auto">
+        <table aria-label="Volume periods">
+          <thead><tr>
+            <th>Start</th><th>End</th><th>Total</th><th style="width:160px">Actions</th>
+          </tr></thead>
+          <tbody id="volTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Export / Import -->
+    <section class="card" aria-labelledby="impExpTitle">
+      <h2 id="impExpTitle">CSV &amp; JSON Export / Import</h2>
+      <div class="btn-row">
+        <button id="exportAgentsCsvBtn" class="ghost">Export Agents CSV</button>
+        <button id="exportCallsCsvBtn2" class="ghost">Export Calls CSV</button>
+        <button id="exportVolumesCsvBtn" class="ghost">Export Volumes CSV</button>
+      </div>
+      <div class="hr"></div>
+      <form id="csvImportForm" class="grid2">
+        <label>Import target
+          <select id="csvImportTarget">
+            <option value="agents">Agents</option>
+            <option value="calls">Calls</option>
+            <option value="volumes">Volumes</option>
+          </select>
+        </label>
+        <label>Select CSV
+          <input id="csvImportFile" type="file" accept=".csv" required="">
+        </label>
+        <div style="grid-column:1/-1; display:flex; gap:.5rem; justify-content:flex-end">
+          <button type="submit">Import CSV</button>
+        </div>
+      </form>
+      <p class="muted small">CSV headers (case-insensitive, any order): agents→name | calls→agent,date,duration,outcome | volumes→start,end,total</p>
+      <div class="hr"></div>
+      <div class="row">
+        <div class="col">
+          <button class="ok" id="backupAllJsonBtn">Export Full JSON</button>
+        </div>
+        <div class="col">
+          <label for="restoreAllJsonInput">Import Full JSON
+            <input id="restoreAllJsonInput" type="file" accept="application/json">
+          </label>
+        </div>
+      </div>
+      <p class="muted small">Full JSON includes agents, calls, volumes, outcomes, and settings.</p>
+    </section>
+
+    <!-- Analytics -->
+    <section class="card" style="grid-column:1/-1" aria-labelledby="dashTitle">
+      <h2 id="dashTitle">Analytics Dashboard</h2>
+
+      <div id="statsRow" class="chips" aria-live="polite"></div>
+
+      <div class="charts">
+        <canvas id="chartWeekly" aria-label="Weekly calls per agent (stacked)"></canvas>
+        <canvas id="chartOutcomes" aria-label="Outcome distribution"></canvas>
+        <canvas id="chartCorrelation" aria-label="Handled vs Incoming correlation"></canvas>
+      </div>
+    </section>
+
+    <!-- Custom Period Comparison -->
+    <section class="card" style="grid-column:1/-1" aria-labelledby="cmpTitle">
+      <h2 id="cmpTitle">Custom Period Comparison</h2>
+      <form id="compareForm" class="row wrap">
+        <label>Period A Start
+          <input type="date" id="aStart">
+        </label>
+        <label>Period A End
+          <input type="date" id="aEnd">
+        </label>
+        <label>Period B Start
+          <input type="date" id="bStart">
+        </label>
+        <label>Period B End
+          <input type="date" id="bEnd">
+        </label>
+        <div class="spacer"></div>
+        <button type="submit">Compare</button>
+      </form>
+      <div id="compareResult" class="small"></div>
+    </section>
+  </main>
+
+  <footer>
+    All data stays locally in your browser (localStorage). Use JSON backup to move or restore data. For PWA installability, host this file via HTTPS and place the generated service worker at the same path.
+  </footer>
+
+  <!-- Edit Call Modal -->
+  <dialog id="callModal" aria-labelledby="callModalTitle">
+    <form method="dialog" id="callModalForm">
+      <div class="modal-header" id="callModalTitle">Edit Call</div>
+      <div class="modal-body grid2">
+        <input type="hidden" id="callModalId">
+        <label>Agent
+          <select id="callModalAgent"></select>
+        </label>
+        <label>Date &amp; Time
+          <input type="datetime-local" id="callModalDate" required="">
+        </label>
+        <label>Duration (minutes)
+          <input type="number" id="callModalDur" min="0" step="0.1" required="">
+        </label>
+        <label>Outcome
+          <select id="callModalOutcome"></select>
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button value="cancel" class="ghost">Cancel</button>
+        <button value="default" class="ok" id="callModalSaveBtn">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Edit Volume Modal -->
+  <dialog id="volModal" aria-labelledby="volModalTitle">
+    <form method="dialog" id="volModalForm">
+      <div class="modal-header" id="volModalTitle">Edit Volume</div>
+      <div class="modal-body grid2">
+        <input type="hidden" id="volModalId">
+        <label>Start
+          <input type="date" id="volModalStart" required="">
+        </label>
+        <label>End
+          <input type="date" id="volModalEnd" required="">
+        </label>
+        <label>Total Incoming
+          <input type="number" id="volModalTotal" min="0" required="">
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button value="cancel" class="ghost">Cancel</button>
+        <button value="default" class="ok" id="volModalSaveBtn">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Snackbar (Undo) -->
+  <div class="snackbar" id="snackbar" role="status" aria-live="polite">
+    <div class="msg" id="snackbarMsg">Item deleted.</div>
+    <div class="actions">
+      <button class="ghost" id="undoBtn">Undo</button>
+      <button class="flat" id="dismissSnackBtn" aria-label="Dismiss">✕</button>
+    </div>
+  </div>
+
+  <!-- Manifest (data URL) -->
+  <link id="manifestLink" rel="manifest">
+
+  <script>
+    // ------------- Utilities -------------
+    const LS_KEY = 'ACT_DATA';
+    const SCHEMA = 3;
+
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+    const fmtDateTime = new Intl.DateTimeFormat(undefined, { dateStyle:'medium', timeStyle:'short' });
+    const fmtNumber = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 });
+
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const newId = (p='id') => p + '_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+
+    const toISO = d => new Date(d).toISOString();
+    // Parse an <input type="datetime-local"> value (local) -> ISO UTC
+    function localDateTimeToISO(localValue){
+      // Expect "YYYY-MM-DDTHH:MM" (maybe with :SS)
+      if(!localValue) return null;
+      const d = new Date(localValue);
+      if (Number.isNaN(+d)) return null;
+      return d.toISOString();
+    }
+    const dateOnlyToStartISO = (dateStr) => {
+      if(!dateStr) return null;
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.toISOString();
+    };
+    const dateOnlyToEndISO = (dateStr) => {
+      if(!dateStr) return null;
+      const d = new Date(dateStr + 'T23:59:59.999');
+      return d.toISOString();
+    };
+
+    const parseMaybeISO = s => {
+      const d = new Date(s);
+      return Number.isNaN(+d) ? null : d;
+    };
+
+    function csvEscape(v){ return '"' + String(v).replace(/"/g,'""') + '"' }
+    function hasBOM(text){ return text.charCodeAt(0) === 0xFEFF }
+
+    // ISO week key (UTC-based to match stored UTC)
+    function isoWeekKey(isoDate){
+      const date = new Date(isoDate);
+      const t = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+      const day = t.getUTCDay() || 7;
+      t.setUTCDate(t.getUTCDate() + 4 - day);
+      const yStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+      const w = Math.ceil((((t - yStart) / 86400000) + 1) / 7);
+      return `${t.getUTCFullYear()}-W${String(w).padStart(2,'0')}`;
+    }
+
+    function monthKey(isoDate){
+      const d = new Date(isoDate);
+      return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`;
+    }
+
+    // ------------- State & Persistence -------------
+    let state = {
+      schemaVersion: SCHEMA,
+      agents: [],           // {id, name, norm}
+      calls: [],            // {id, agentId, ts, durationMin, outcome}
+      volumes: [],          // {id, startTs, endTs, total}
+      outcomes: ["Resolved","Escalated","Voicemail","Disconnected"],
+      settings: {
+        theme: 'auto',
+        rangeFrom: null,    // ISO start
+        rangeTo: null       // ISO end
+      },
+      history: []           // undo stack [{type, entity, item}]
+    };
+
+    // Load legacy or current
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) {
+        const old = JSON.parse(raw);
+        state = migrate(old);
+        save(); // ensure new format persisted
+      }
+    } catch (e) {
+      console.error('Load error', e);
+    }
+
+    let saveTimer;
+    function save(){
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(()=>{
+        try { localStorage.setItem(LS_KEY, JSON.stringify(state)) } catch(e){ console.error('Save error', e) }
+      }, 80);
+    }
+
+    function migrate(old){
+      // If already v3 schema
+      if (old && typeof old === 'object' && old.schemaVersion === SCHEMA) return old;
+
+      // v2 → v3 migration
+      const s = JSON.parse(JSON.stringify(state));
+      if (!old || typeof old !== 'object') return s;
+
+      // Agents
+      const nameToId = new Map();
+      if (Array.isArray(old.agents)) {
+        old.agents.forEach(name => {
+          if (!name || typeof name !== 'string') return;
+          const n = normalizeName(name);
+          if (!nameToId.has(n)) {
+            const id = newId('a');
+            nameToId.set(n, id);
+            s.agents.push({ id, name: name.trim(), norm: n });
+          }
+        });
+      }
+      // If calls contain an agent name not in list, add it.
+      if (Array.isArray(old.calls)) {
+        for (const c of old.calls) {
+          const nm = (c.agent||'').trim();
+          if (!nm) continue;
+          const n = normalizeName(nm);
+          if (!nameToId.has(n)) {
+            const id = newId('a');
+            nameToId.set(n, id);
+            s.agents.push({ id, name: nm, norm: n });
+          }
+        }
+      }
+
+      // Outcomes
+      if (Array.isArray(old.calls)) {
+        const outs = new Set(s.outcomes);
+        old.calls.forEach(c => { if (c && c.outcome) outs.add(String(c.outcome)) });
+        s.outcomes = Array.from(outs);
+      }
+
+      // Calls
+      if (Array.isArray(old.calls)) {
+        old.calls.forEach(c => {
+          if (!c) return;
+          const agentName = (c.agent||'').trim();
+          const n = normalizeName(agentName);
+          const agentId = nameToId.get(n);
+          const ts = parseMaybeISO(c.date) ? new Date(c.date).toISOString()
+                   : localDateTimeToISO(String(c.date||'').trim());
+          const dur = Number(c.duration);
+          const oc = c.outcome ? String(c.outcome) : '';
+          if (agentId && ts && Number.isFinite(dur) && dur >= 0 && oc) {
+            s.calls.push({ id: newId('c'), agentId, ts, durationMin: +dur, outcome: oc });
+          }
+        });
+      }
+
+      // Volumes
+      if (Array.isArray(old.volumes)) {
+        old.volumes.forEach(v => {
+          if (!v) return;
+          const st = dateOnlyToStartISO(String(v.start||'').trim());
+          const en = dateOnlyToEndISO(String(v.end||'').trim());
+          const tot = Number(v.total);
+          if (st && en && Number.isFinite(tot) && tot >= 0) {
+            s.volumes.push({ id: newId('v'), startTs: st, endTs: en, total: +tot });
+          }
+        });
+      }
+
+      // Date range: unset
+      s.settings.rangeFrom = null;
+      s.settings.rangeTo = null;
+
+      s.schemaVersion = SCHEMA;
+      return s;
+    }
+
+    function normalizeName(name){
+      return String(name||'').trim().toLowerCase().replace(/\s+/g,' ');
+    }
+
+    // ------------- Theme -------------
+    function applyTheme(){
+      const prefDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const mode = state.settings.theme;
+      const theme = mode === 'auto' ? (prefDark ? 'dark' : 'light') : mode;
+      document.documentElement.setAttribute('data-theme', theme);
+      const themeColor = theme === 'dark' ? '#0f172a' : '#f7f9fc';
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', themeColor);
+    }
+    applyTheme();
+    $('#themeSelect').value = state.settings.theme;
+    $('#themeSelect').addEventListener('change', e => {
+      state.settings.theme = e.target.value;
+      save(); applyTheme();
+    });
+    // React to system change if auto
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
+      if (state.settings.theme === 'auto') applyTheme();
+    });
+
+    // ------------- Global Date Range -------------
+    function setGlobalRangeInputs(){
+      $('#globalFrom').value = state.settings.rangeFrom ? new Date(state.settings.rangeFrom).toISOString().slice(0,10) : '';
+      $('#globalTo').value = state.settings.rangeTo ? new Date(state.settings.rangeTo).toISOString().slice(0,10) : '';
+    }
+    setGlobalRangeInputs();
+
+    $('#globalFrom').addEventListener('change', e=>{
+      state.settings.rangeFrom = e.target.value ? dateOnlyToStartISO(e.target.value) : null;
+      save(); renderAll();
+    });
+    $('#globalTo').addEventListener('change', e=>{
+      state.settings.rangeTo = e.target.value ? dateOnlyToEndISO(e.target.value) : null;
+      save(); renderAll();
+    });
+    $('#clearRangeBtn').addEventListener('click', ()=>{
+      state.settings.rangeFrom = null; state.settings.rangeTo = null;
+      setGlobalRangeInputs(); save(); renderAll();
+    });
+
+    // ------------- Agents -------------
+    const agentForm = $('#agentForm');
+    agentForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      const name = $('#agentNameInput').value.trim();
+      if (!name) return;
+      const norm = normalizeName(name);
+      if (state.agents.some(a=>a.norm===norm)) {
+        alert('Agent already exists.');
+        return;
+      }
+      state.agents.push({ id:newId('a'), name, norm });
+      save(); $('#agentNameInput').value = '';
+      renderAgents(); renderAgentOptions(); renderAllAnalytics();
+    });
+
+    function renderAgents(){
+      const tb = $('#agentTbody');
+      tb.innerHTML = '';
+      if (!state.agents.length){
+        const tr = document.createElement('tr');
+        const td = document.createElement('td'); td.colSpan = 2; td.textContent = 'No agents yet.'; tr.appendChild(td);
+        tb.appendChild(tr);
+        return;
+      }
+      for (const a of state.agents){
+        const tr = document.createElement('tr');
+        const tdN = document.createElement('td'); tdN.textContent = a.name;
+        const tdA = document.createElement('td');
+
+        const renameBtn = document.createElement('button');
+        renameBtn.className = 'ghost'; renameBtn.textContent = 'Rename';
+        renameBtn.addEventListener('click', ()=>{
+          const newName = prompt('Rename agent:', a.name);
+          if (!newName) return;
+          const nn = normalizeName(newName);
+          if (state.agents.some(x=>x.id!==a.id && x.norm===nn)) { alert('Another agent already has this name.'); return; }
+          a.name = newName.trim(); a.norm = nn; save(); renderAgents(); renderAgentOptions(); renderCallsFilters(); renderCallsList(); renderAllAnalytics();
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'danger'; delBtn.textContent = 'Delete';
+        delBtn.addEventListener('click', ()=>{
+          if (state.calls.some(c=>c.agentId===a.id)) {
+            alert('Cannot delete: there are calls associated with this agent.');
+            return;
+          }
+          const idx = state.agents.findIndex(x=>x.id===a.id);
+          const removed = state.agents.splice(idx,1)[0];
+          pushUndo({type:'delete', entity:'agent', item:removed});
+          save(); renderAgents(); renderAgentOptions(); renderAllAnalytics();
+          showSnack('Agent deleted.', ()=>{ // undo
+            state.agents.push(removed); save(); renderAgents(); renderAgentOptions(); renderAllAnalytics();
+          });
+        });
+
+        tdA.append(renameBtn, ' ', delBtn);
+        tr.append(tdN, tdA);
+        tb.appendChild(tr);
+      }
+    }
+
+    function renderAgentOptions(){
+      // datalist for Add Call
+      const dl = $('#agentList'); dl.innerHTML = '';
+      state.agents.forEach(a=>{
+        const opt = document.createElement('option');
+        opt.value = a.name; dl.appendChild(opt);
+      });
+      // selects in filters & modals
+      const filterSel = $('#filterAgent');
+      const modalSel = $('#callModalAgent');
+
+      // preserve selection
+      const prev = filterSel.value;
+      filterSel.innerHTML = '<option value="">All</option>';
+      state.agents.forEach(a=>{
+        const opt = document.createElement('option');
+        opt.value = a.id; opt.textContent = a.name;
+        filterSel.appendChild(opt);
+      });
+      if ([...filterSel.options].some(o=>o.value===prev)) filterSel.value = prev;
+
+      modalSel.innerHTML = '';
+      state.agents.forEach(a=>{
+        const opt = document.createElement('option');
+        opt.value = a.id; opt.textContent = a.name;
+        modalSel.appendChild(opt);
+      });
+    }
+
+    // Outcomes management
+    function renderOutcomes(){
+      const sel = $('#callOutcome');
+      sel.innerHTML = '';
+      state.outcomes.forEach(o=>{
+        const opt = document.createElement('option');
+        opt.value = o; opt.textContent = o; sel.appendChild(opt);
+      });
+      // filter
+      const filterOut = $('#filterOutcome');
+      const prev = filterOut.value;
+      filterOut.innerHTML = '<option value="">All</option>';
+      state.outcomes.forEach(o=>{
+        const opt = document.createElement('option');
+        opt.value = o; opt.textContent = o; filterOut.appendChild(opt);
+      });
+      if ([...filterOut.options].some(o=>o.value===prev)) filterOut.value = prev;
+      // chips
+      const chips = $('#outcomeChips'); chips.innerHTML = '';
+      state.outcomes.forEach(o=>{
+        const chip = document.createElement('span');
+        chip.className = 'tag';
+        chip.textContent = o;
+        if (!["Resolved","Escalated","Voicemail","Disconnected"].includes(o)) {
+          const del = document.createElement('button');
+          del.className = 'flat'; del.setAttribute('aria-label','Remove outcome'); del.textContent='✕';
+          del.addEventListener('click', ()=>{
+            // block removal if in use
+            if (state.calls.some(c=>c.outcome===o)) {
+              alert('Cannot remove: some calls use this outcome.');
+              return;
+            }
+            state.outcomes = state.outcomes.filter(x=>x!==o); save(); renderOutcomes(); renderAllAnalytics();
+          });
+          chip.appendChild(del);
+        }
+        chips.appendChild(chip);
+      });
+      // modal select mirror
+      const modalSel = $('#callModalOutcome');
+      modalSel.innerHTML = '';
+      state.outcomes.forEach(o=>{
+        const opt = document.createElement('option'); opt.value = o; opt.textContent = o; modalSel.appendChild(opt);
+      });
+    }
+
+    $('#addOutcomeBtn').addEventListener('click', ()=>{
+      const v = $('#newOutcomeInput').value.trim();
+      if (!v) return;
+      if (state.outcomes.includes(v)) { alert('Outcome already exists.'); return; }
+      state.outcomes.push(v); $('#newOutcomeInput').value='';
+      save(); renderOutcomes();
+    });
+
+    // ------------- Add Call -------------
+    $('#callForm').addEventListener('submit', e=>{
+      e.preventDefault();
+      const agentText = $('#callAgent').value.trim();
+      const tsISO = localDateTimeToISO($('#callDate').value);
+      const dur = Number($('#callDuration').value);
+      const outcome = $('#callOutcome').value;
+
+      if (!agentText || !tsISO || !Number.isFinite(dur) || dur < 0 || !outcome) { alert('Please complete all fields correctly.'); return; }
+
+      // Find or add agent
+      const norm = normalizeName(agentText);
+      let agent = state.agents.find(a=>a.norm===norm);
+      if (!agent) {
+        agent = { id:newId('a'), name: agentText, norm };
+        state.agents.push(agent);
+        renderAgents(); renderAgentOptions();
+      }
+
+      state.calls.push({ id:newId('c'), agentId: agent.id, ts: tsISO, durationMin: +dur, outcome });
+      save();
+      e.target.reset();
+      renderCallsFilters(); renderCallsList(); renderAllAnalytics();
+    });
+
+    // ------------- Volumes -------------
+    $('#volForm').addEventListener('submit', e=>{
+      e.preventDefault();
+      const s = $('#volStart').value, e2 = $('#volEnd').value, tot = Number($('#volTotal').value);
+      if (!s || !e2) { alert('Start and End are required.'); return; }
+      const stISO = dateOnlyToStartISO(s), enISO = dateOnlyToEndISO(e2);
+      if (new Date(stISO) > new Date(enISO)) { alert('Start must not be after End.'); return; }
+      if (!Number.isFinite(tot) || tot < 0) { alert('Total must be a non-negative number.'); return; }
+      state.volumes.push({ id:newId('v'), startTs: stISO, endTs: enISO, total: +tot });
+      save(); $('#volForm').reset(); renderVolumes(); renderAllAnalytics();
+    });
+
+    function renderVolumes(){
+      const tb = $('#volTbody');
+      tb.innerHTML='';
+      if (!state.volumes.length){
+        const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan=4; td.textContent='No entries'; tr.appendChild(td); tb.appendChild(tr); return;
+      }
+      for (const v of state.volumes){
+        const tr = document.createElement('tr');
+        const tdS = document.createElement('td'); tdS.textContent = new Date(v.startTs).toISOString().slice(0,10);
+        const tdE = document.createElement('td'); tdE.textContent = new Date(v.endTs).toISOString().slice(0,10);
+        const tdT = document.createElement('td'); tdT.textContent = v.total;
+        const tdA = document.createElement('td');
+
+        const edit = document.createElement('button'); edit.className='ghost'; edit.textContent='Edit';
+        edit.addEventListener('click', ()=> openVolModal(v.id));
+
+        const del = document.createElement('button'); del.className='danger'; del.textContent='Delete';
+        del.addEventListener('click', ()=>{
+          const idx = state.volumes.findIndex(x=>x.id===v.id);
+          const removed = state.volumes.splice(idx,1)[0];
+          pushUndo({type:'delete', entity:'volume', item:removed});
+          save(); renderVolumes(); renderAllAnalytics();
+          showSnack('Volume deleted.', ()=>{ state.volumes.push(removed); save(); renderVolumes(); renderAllAnalytics(); });
+        });
+
+        tdA.append(edit, ' ', del);
+        tr.append(tdS, tdE, tdT, tdA);
+        tb.appendChild(tr);
+      }
+    }
+
+    // ------------- CSV Export / Import -------------
+    $('#exportAgentsCsvBtn').addEventListener('click', ()=> exportCSV('agents'));
+    $('#exportCallsCsvBtn').addEventListener('click', ()=> exportCSV('calls'));
+    $('#exportCallsCsvBtn2').addEventListener('click', ()=> exportCSV('calls'));
+    $('#exportVolumesCsvBtn').addEventListener('click', ()=> exportCSV('volumes'));
+
+    function exportCSV(type){
+      let csv='', filename='';
+      if (type === 'agents'){
+        csv = 'id,name\n' + state.agents.map(a=>[a.id, a.name].map(csvEscape).join(',')).join('\n');
+        filename = 'agents.csv';
+      } else if (type === 'calls'){
+        // Export with agent name for human readability + agentId
+        csv = 'id,agentId,agent,date,duration,outcome\n' + state.calls.map(c=>{
+          const agent = state.agents.find(a=>a.id===c.agentId);
+          const row = [c.id, c.agentId, agent?agent.name:'', c.ts, c.durationMin, c.outcome];
+          return row.map(csvEscape).join(',');
+        }).join('\n');
+        filename = 'calls.csv';
+      } else {
+        csv = 'id,start,end,total\n' + state.volumes.map(v=>[v.id, v.startTs.slice(0,10), v.endTs.slice(0,10), v.total].map(csvEscape).join(',')).join('\n');
+        filename = 'volumes.csv';
+      }
+      const blob = new Blob([csv], {type:'text/csv'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+    }
+
+    $('#csvImportForm').addEventListener('submit', e=>{
+      e.preventDefault();
+      const file = $('#csvImportFile').files[0];
+      if (!file) return;
+      const target = $('#csvImportTarget').value;
+
+      const reader = new FileReader();
+      reader.onload = ev=>{
+        let text = String(ev.target.result || '');
+        if (hasBOM(text)) text = text.slice(1);
+        const rowsRaw = text.split(/\r?\n/).filter(r=>r.trim().length>0);
+        const rows = rowsRaw.map(line => {
+          // CSV split (handles quotes)
+          const re = /(?:,|\n|^)(?:"([^"]*(?:""[^"]*)*)"|([^",\n]*))/g;
+          const out=[]; let m; let s=line; let i=0;
+          // Simpler approach: split by commas not in quotes
+          const parts = line.match(/("([^"]|"")*"|[^,]+)/g) || [];
+          for (let p of parts){
+            p = p.trim();
+            if (p.startsWith('"') && p.endsWith('"')) p = p.slice(1,-1).replace(/""/g,'"');
+            out.push(p);
+          }
+          return out;
+        });
+        if (!rows.length) { alert('Empty CSV'); return; }
+        const headers = rows[0].map(h=>String(h||'').trim().toLowerCase());
+        const idx = name => headers.indexOf(name);
+
+        let added = 0, errors = 0, msgs=[];
+        try{
+          if (target==='agents'){
+            const iName = idx('name'), iId = idx('id');
+            if (iName<0) throw new Error('Missing "name" header.');
+            for (let r=1; r<rows.length; r++){
+              const row = rows[r]; if (!row) continue;
+              const name = row[iName]?.trim(); if (!name) continue;
+              const norm = normalizeName(name);
+              if (state.agents.some(a=>a.norm===norm)) continue;
+              const id = iId>=0 && row[iId]?.trim() ? row[iId].trim() : newId('a');
+              state.agents.push({id, name, norm}); added++;
+            }
+          } else if (target==='calls'){
+            const iId = idx('id'), iAgentId = idx('agentid'), iAgent = idx('agent'), iDate = idx('date'), iDur = idx('duration'), iOut = idx('outcome');
+            if (iDate<0 || iDur<0 || iOut<0 || (iAgentId<0 && iAgent<0)) throw new Error('Headers must include agent or agentId, date, duration, outcome.');
+            for (let r=1; r<rows.length; r++){
+              const row = rows[r]; if (!row) continue;
+              const id = iId>=0 && row[iId]?.trim() ? row[iId].trim() : newId('c');
+              let agentId = iAgentId>=0 ? row[iAgentId]?.trim() : '';
+              let agentName = iAgent>=0 ? row[iAgent]?.trim() : '';
+              if (!agentId){
+                if (!agentName) { errors++; msgs.push(`Row ${r+1}: missing agent/agentId`); continue; }
+                const norm = normalizeName(agentName);
+                let ag = state.agents.find(a=>a.norm===norm);
+                if (!ag){ ag = {id:newId('a'), name:agentName, norm}; state.agents.push(ag); }
+                agentId = ag.id;
+              }
+              const tsOk = parseMaybeISO(row[iDate]?.trim());
+              const ts = tsOk ? tsOk.toISOString() : localDateTimeToISO(row[iDate]?.trim());
+              const dur = Number(row[iDur]); const out = row[iOut]?.trim();
+              if (!ts || !Number.isFinite(dur) || dur<0 || !out) { errors++; msgs.push(`Row ${r+1}: invalid data`); continue; }
+              state.calls.push({ id, agentId, ts, durationMin:+dur, outcome:out }); added++;
+            }
+          } else {
+            const iId = idx('id'), iStart = idx('start'), iEnd = idx('end'), iTot = idx('total');
+            if (iStart<0 || iEnd<0 || iTot<0) throw new Error('Headers must include start, end, total.');
+            for (let r=1; r<rows.length; r++){
+              const row = rows[r]; if (!row) continue;
+              const id = iId>=0 && row[iId]?.trim() ? row[iId].trim() : newId('v');
+              const st = dateOnlyToStartISO(row[iStart]?.trim());
+              const en = dateOnlyToEndISO(row[iEnd]?.trim());
+              const tot = Number(row[iTot]);
+              if (!st || !en || !Number.isFinite(tot) || tot<0) { errors++; msgs.push(`Row ${r+1}: invalid data`); continue; }
+              state.volumes.push({ id, startTs: st, endTs: en, total:+tot }); added++;
+            }
+          }
+        } catch(err){
+          alert('Import error: ' + err.message);
+          return;
+        }
+        save();
+        renderAgents(); renderAgentOptions(); renderCallsFilters(); renderCallsList(); renderVolumes(); renderAllAnalytics();
+        alert(`Import complete. Added: ${added}${errors?`. Errors: ${errors}`:''}`);
+        if (msgs.length) console.warn('Import issues:', msgs.join('\n'));
+      };
+      reader.readAsText(file);
+      $('#csvImportFile').value = '';
+    });
+
+    // ------------- Full JSON Backup/Restore -------------
+    function downloadJSON(obj, filename){
+      const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+    }
+    $('#backupJsonBtn').addEventListener('click', ()=> downloadJSON(state, 'agent-call-tracker-backup.json'));
+    $('#backupAllJsonBtn').addEventListener('click', ()=> downloadJSON(state, 'agent-call-tracker-full.json'));
+
+    $('#restoreJsonBtn').addEventListener('click', ()=> $('#restoreJsonInput').click());
+    $('#restoreJsonInput').addEventListener('change', e=>{
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev=>{
+        try{
+          const obj = JSON.parse(String(ev.target.result||'{}'));
+          const migrated = migrate(obj);
+          state = migrated; save(); // overwrite
+          applyTheme(); setGlobalRangeInputs();
+          renderAll();
+          alert('Restore complete.');
+        }catch(err){ alert('Restore failed: ' + err.message) }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    $('#restoreAllJsonInput').addEventListener('change', e=>{
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev=>{
+        try{
+          const obj = JSON.parse(String(ev.target.result||'{}'));
+          const migrated = migrate(obj);
+          state = migrated; save(); renderAll(); alert('Full JSON imported.');
+        }catch(err){ alert('Import failed: ' + err.message) }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    // ------------- Calls: filters, sort, virtualization -------------
+    const filters = {
+      agentId: '',
+      outcome: '',
+      from: '',
+      to: '',
+      sort: 'date_desc'
+    };
+
+    function renderCallsFilters(){
+      // Fill filter selects (agents/outcomes already handled). Sync dates to global range by default.
+      $('#filterAgent').value = filters.agentId || '';
+      $('#filterOutcome').value = filters.outcome || '';
+      $('#filterFrom').value = filters.from || (state.settings.rangeFrom ? new Date(state.settings.rangeFrom).toISOString().slice(0,10) : '');
+      $('#filterTo').value = filters.to || (state.settings.rangeTo ? new Date(state.settings.rangeTo).toISOString().slice(0,10) : '');
+      $('#sortBy').value = filters.sort;
+    }
+
+    $('#filterAgent').addEventListener('change', e=>{ filters.agentId = e.target.value; renderCallsList() });
+    $('#filterOutcome').addEventListener('change', e=>{ filters.outcome = e.target.value; renderCallsList() });
+    $('#filterFrom').addEventListener('change', e=>{ filters.from = e.target.value; renderCallsList() });
+    $('#filterTo').addEventListener('change', e=>{ filters.to = e.target.value; renderCallsList() });
+    $('#sortBy').addEventListener('change', e=>{ filters.sort = e.target.value; renderCallsList() });
+
+    // Selection
+    const selected = new Set();
+    $('#selectAllChk').addEventListener('change', e=>{
+      const view = currentCallsView();
+      selected.clear();
+      if (e.target.checked) view.forEach(c=>selected.add(c.id));
+      updateBulkButtons();
+      renderCallsList(); // refresh checkbox UI
+    });
+    $('#selectAllBtn').addEventListener('click', ()=>{
+      const view = currentCallsView();
+      const allSel = view.every(c=>selected.has(c.id));
+      if (allSel) { selected.clear(); } else { view.forEach(c=>selected.add(c.id)); }
+      // update header chk
+      $('#selectAllChk').checked = !allSel;
+      updateBulkButtons(); renderCallsList();
+    });
+
+    $('#deleteSelectedBtn').addEventListener('click', ()=>{
+      if (!selected.size) return;
+      const ids = Array.from(selected);
+      const removed = [];
+      for (const id of ids){
+        const idx = state.calls.findIndex(c=>c.id===id);
+        if (idx>=0) removed.push(state.calls.splice(idx,1)[0]);
+      }
+      if (!removed.length) return;
+      selected.clear();
+      save(); renderCallsList(); renderAllAnalytics();
+      showSnack(`${removed.length} call(s) deleted.`, ()=>{
+        state.calls.push(...removed); save(); renderCallsList(); renderAllAnalytics();
+      });
+    });
+
+    function updateBulkButtons(){
+      const any = selected.size>0;
+      $('#deleteSelectedBtn').disabled = !any;
+    }
+
+    function currentCallsView(){
+      const fromISO = filters.from ? dateOnlyToStartISO(filters.from) : (state.settings.rangeFrom || null);
+      const toISO = filters.to ? dateOnlyToEndISO(filters.to) : (state.settings.rangeTo || null);
+
+      let arr = state.calls.slice();
+      if (filters.agentId) arr = arr.filter(c=>c.agentId===filters.agentId);
+      if (filters.outcome) arr = arr.filter(c=>c.outcome===filters.outcome);
+      if (fromISO) arr = arr.filter(c=>c.ts >= fromISO);
+      if (toISO) arr = arr.filter(c=>c.ts <= toISO);
+
+      arr.sort((a,b)=>{
+        switch(filters.sort){
+          case 'date_asc': return (a.ts<b.ts)?-1:(a.ts>b.ts?1:0);
+          case 'dur_desc': return b.durationMin - a.durationMin || (b.ts > a.ts ? 1 : -1);
+          case 'dur_asc': return a.durationMin - b.durationMin || (a.ts > b.ts ? 1 : -1);
+          case 'date_desc':
+          default: return (a.ts>b.ts)?-1:(a.ts<b.ts?1:0);
+        }
+      });
+      return arr;
+    }
+
+    // Virtualized renderer
+    const vtBody = $('#vtBody');
+    const vtRail = $('#vtRail');
+    const ROW_H = 40; // px (keep in CSS var --row)
+    let vtData = []; // current view
+    let vtTop = 0, vtH = 0;
+
+    function renderCallsList(){
+      vtData = currentCallsView();
+      // Update header select-all checkbox
+      $('#selectAllChk').checked = vtData.length>0 && vtData.every(c=>selected.has(c.id));
+      updateBulkButtons();
+
+      vtBody.setAttribute('aria-rowcount', String(vtData.length));
+      vtBody.scrollTop = clamp(vtBody.scrollTop, 0, Math.max(0, vtData.length*ROW_H - vtBody.clientHeight));
+      vtRail.style.height = (vtData.length * ROW_H) + 'px';
+      // Initial fill
+      paintVisibleRows();
+    }
+
+    function paintVisibleRows(){
+      vtTop = vtBody.scrollTop || 0;
+      vtH = vtBody.clientHeight || 0;
+      const start = Math.max(0, Math.floor(vtTop/ROW_H) - 8);
+      const end = Math.min(vtData.length, Math.ceil((vtTop+vtH)/ROW_H) + 8);
+
+      // Recycle: clear then append only needed
+      vtRail.innerHTML = '';
+      for (let i=start; i<end; i++){
+        const c = vtData[i];
+        const row = document.createElement('div');
+        row.className = 'vt-row';
+        row.style.transform = `translateY(${i*ROW_H}px)`;
+        row.setAttribute('role','row');
+        row.dataset.id = c.id;
+
+        const agent = state.agents.find(a=>a.id===c.agentId);
+        const dateText = fmtDateTime.format(new Date(c.ts));
+
+        // Cells
+        const c0 = document.createElement('div');
+        const cb = document.createElement('input'); cb.type='checkbox'; cb.className='checkbox';
+        cb.checked = selected.has(c.id);
+        cb.setAttribute('aria-label','Select call');
+        cb.addEventListener('change', e=>{
+          if (e.target.checked) selected.add(c.id); else selected.delete(c.id);
+          updateBulkButtons();
+          // update header checkbox if needed
+          $('#selectAllChk').checked = vtData.length>0 && vtData.every(x=>selected.has(x.id));
+        });
+        c0.appendChild(cb);
+
+        const c1 = document.createElement('div'); c1.textContent = agent ? agent.name : '(deleted)';
+        const c2 = document.createElement('div'); c2.textContent = dateText;
+        const c3 = document.createElement('div'); c3.textContent = `${fmtNumber.format(c.durationMin)} min`;
+        const c4 = document.createElement('div'); c4.textContent = c.outcome;
+        const c5 = document.createElement('div'); c5.style.textAlign='right';
+
+        const edit = document.createElement('button'); edit.className='ghost'; edit.textContent='Edit';
+        edit.addEventListener('click', ()=> openCallModal(c.id));
+
+        const del = document.createElement('button'); del.className='danger'; del.textContent='Delete';
+        del.addEventListener('click', ()=>{
+          const idx = state.calls.findIndex(x=>x.id===c.id);
+          const removed = state.calls.splice(idx,1)[0];
+          selected.delete(c.id);
+          pushUndo({type:'delete', entity:'call', item:removed});
+          save(); renderCallsList(); renderAllAnalytics();
+          showSnack('Call deleted.', ()=>{ state.calls.push(removed); save(); renderCallsList(); renderAllAnalytics(); });
+        });
+
+        c5.append(edit, ' ', del);
+
+        row.append(c0,c1,c2,c3,c4,c5);
+        vtRail.appendChild(row);
+      }
+    }
+    vtBody.addEventListener('scroll', paintVisibleRows);
+    window.addEventListener('resize', paintVisibleRows);
+
+    // ------------- Modals: Edit Call / Volume -------------
+    const callModal = $('#callModal');
+    function openCallModal(id){
+      const c = state.calls.find(x=>x.id===id); if (!c) return;
+      $('#callModalId').value = id;
+      $('#callModalAgent').value = c.agentId;
+      $('#callModalDate').value = new Date(c.ts).toISOString().slice(0,16);
+      $('#callModalDur').value = String(c.durationMin);
+      $('#callModalOutcome').value = c.outcome;
+      callModal.showModal();
+    }
+    $('#callModalSaveBtn').addEventListener('click', e=>{
+      e.preventDefault();
+      const id = $('#callModalId').value;
+      const c = state.calls.find(x=>x.id===id); if (!c) { callModal.close(); return; }
+      const agentId = $('#callModalAgent').value;
+      const ts = localDateTimeToISO($('#callModalDate').value);
+      const dur = Number($('#callModalDur').value);
+      const outcome = $('#callModalOutcome').value;
+      if (!agentId || !ts || !Number.isFinite(dur) || dur<0 || !outcome) { alert('Please check fields.'); return; }
+      c.agentId = agentId; c.ts = ts; c.durationMin = +dur; c.outcome = outcome;
+      save(); callModal.close(); renderCallsList(); renderAllAnalytics();
+    });
+
+    const volModal = $('#volModal');
+    function openVolModal(id){
+      const v = state.volumes.find(x=>x.id===id); if (!v) return;
+      $('#volModalId').value = id;
+      $('#volModalStart').value = new Date(v.startTs).toISOString().slice(0,10);
+      $('#volModalEnd').value = new Date(v.endTs).toISOString().slice(0,10);
+      $('#volModalTotal').value = String(v.total);
+      volModal.showModal();
+    }
+    $('#volModalSaveBtn').addEventListener('click', e=>{
+      e.preventDefault();
+      const id = $('#volModalId').value;
+      const v = state.volumes.find(x=>x.id===id); if (!v) { volModal.close(); return; }
+      const s = $('#volModalStart').value, e2 = $('#volModalEnd').value, tot = Number($('#volModalTotal').value);
+      if (!s || !e2) { alert('Start and End are required.'); return; }
+      const stISO = dateOnlyToStartISO(s), enISO = dateOnlyToEndISO(e2);
+      if (new Date(stISO) > new Date(enISO)) { alert('Start must not be after End.'); return; }
+      if (!Number.isFinite(tot) || tot < 0) { alert('Total must be a non-negative number.'); return; }
+      v.startTs = stISO; v.endTs = enISO; v.total = +tot;
+      save(); volModal.close(); renderVolumes(); renderAllAnalytics();
+    });
+
+    // ------------- Undo Snackbar -------------
+    let snackTimer = null;
+    function pushUndo(entry){
+      state.history.push(entry);
+      if (state.history.length>5) state.history.shift();
+      save();
+    }
+    function showSnack(message, onUndo){
+      const sb = $('#snackbar');
+      $('#snackbarMsg').textContent = message;
+      sb.classList.add('show');
+      $('#undoBtn').onclick = ()=>{
+        clearTimeout(snackTimer); sb.classList.remove('show');
+        try{ onUndo && onUndo(); }catch(e){ console.error(e) }
+      };
+      $('#dismissSnackBtn').onclick = ()=>{ clearTimeout(snackTimer); sb.classList.remove('show') };
+      clearTimeout(snackTimer);
+      snackTimer = setTimeout(()=> sb.classList.remove('show'), 6000);
+    }
+
+    // ------------- Analytics -------------
+    let chartWeekly, chartOutcomes, chartCorrelation;
+
+    function withinGlobalRange(ts){
+      if (state.settings.rangeFrom && ts < state.settings.rangeFrom) return false;
+      if (state.settings.rangeTo && ts > state.settings.rangeTo) return false;
+      return true;
+    }
+    function callsInRange(arr){
+      return arr.filter(c=>withinGlobalRange(c.ts));
+    }
+    function volumesInRange(arr){
+      // include if overlaps the global range
+      return arr.filter(v=>{
+        const from = state.settings.rangeFrom || toISO('1970-01-01');
+        const to = state.settings.rangeTo || toISO('2999-12-31');
+        return !(v.endTs < from || v.startTs > to);
+      });
+    }
+
+    function renderAllAnalytics(){
+      renderStatsRow();
+      renderWeekly();
+      renderOutcomesChart();
+      renderCorrelation();
+    }
+
+    function renderStatsRow(){
+      const el = $('#statsRow');
+      el.innerHTML='';
+      const calls = callsInRange(state.calls);
+      const total = calls.length;
+      const agentsActive = new Set(calls.map(c=>c.agentId));
+      const durationAvg = total ? (calls.reduce((s,c)=>s+c.durationMin,0)/total) : 0;
+      const outcomeCounts = new Map();
+      calls.forEach(c=> outcomeCounts.set(c.outcome, (outcomeCounts.get(c.outcome)||0)+1) );
+      const resolved = outcomeCounts.get('Resolved')||0;
+      const resRate = total ? (resolved/total*100) : 0;
+
+      // Handled vs incoming ratio
+      const vols = volumesInRange(state.volumes);
+      let handledSum = 0;
+      vols.forEach(v=>{
+        const handled = calls.filter(c=> c.ts >= v.startTs && c.ts <= v.endTs ).length;
+        handledSum += handled;
+      });
+      const incomingSum = vols.reduce((s,v)=>s+v.total,0);
+      const ratio = incomingSum ? (handledSum/incomingSum*100) : (total?100:0);
+
+      const cards = [
+        {label:'Total calls', value:String(total)},
+        {label:'Active agents', value:String(agentsActive.size)},
+        {label:'Avg duration', value: fmtNumber.format(durationAvg)+' min'},
+        {label:'Resolved rate', value: fmtNumber.format(resRate)+'%'},
+        {label:'Handled/Incoming', value: fmtNumber.format(ratio)+'%'}
+      ];
+      for (const c of cards){
+        const tag = document.createElement('div'); tag.className='tag';
+        const b = document.createElement('strong'); b.textContent = c.value;
+        const t = document.createElement('span'); t.className='muted small'; t.textContent = c.label;
+        tag.append(b,' ',t);
+        el.appendChild(tag);
+      }
+    }
+
+    function renderWeekly(){
+      const ctx = $('#chartWeekly');
+      chartWeekly?.destroy();
+
+      const calls = callsInRange(state.calls);
+      if (!calls.length){ ctx.getContext('2d').clearRect(0,0,ctx.width,ctx.height); return; }
+
+      const weeks = new Set(calls.map(c=>isoWeekKey(c.ts)));
+      const labels = Array.from(weeks).sort();
+
+      const byAgentWeek = {};
+      for (const c of calls){
+        const wk = isoWeekKey(c.ts);
+        const a = c.agentId;
+        byAgentWeek[a] ||= {};
+        byAgentWeek[a][wk] = (byAgentWeek[a][wk]||0) + 1;
+      }
+
+      const agents = state.agents.slice().sort((a,b)=>a.name.localeCompare(b.name));
+      const palette = (i)=>['#4f46e5','#22c55e','#06b6d4','#eab308','#ef4444','#a855f7','#14b8a6','#f97316'][i%8];
+
+      const datasets = agents.map((a,i)=>({
+        label: a.name,
+        data: labels.map(w=> byAgentWeek[a.id]?.[w] || 0 ),
+        backgroundColor: palette(i)
+      }));
+
+      chartWeekly = new Chart(ctx, {
+        type:'bar',
+        data:{ labels, datasets },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ display:true, position:'bottom' } },
+          scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, title:{display:true, text:'Calls'} } }
+        }
+      });
+    }
+
+    function renderOutcomesChart(){
+      const ctx = $('#chartOutcomes');
+      chartOutcomes?.destroy();
+      const calls = callsInRange(state.calls);
+      const counts = state.outcomes.map(o => calls.filter(c=>c.outcome===o).length);
+      if (calls.length === 0){ ctx.getContext('2d').clearRect(0,0,ctx.width,ctx.height); return; }
+      chartOutcomes = new Chart(ctx, {
+        type:'doughnut',
+        data:{
+          labels: state.outcomes,
+          datasets:[{ data: counts, backgroundColor: ['#4f46e5','#22c55e','#06b6d4','#eab308','#ef4444','#a855f7','#14b8a6','#f97316'] }]
+        },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
+      });
+    }
+
+    function renderCorrelation(){
+      const ctx = $('#chartCorrelation');
+      chartCorrelation?.destroy();
+
+      const calls = callsInRange(state.calls);
+      const vols = volumesInRange(state.volumes);
+
+      if (!vols.length){ ctx.getContext('2d').clearRect(0,0,ctx.width,ctx.height); return; }
+
+      const points = vols.map(v=>{
+        const handled = calls.filter(c=> c.ts >= v.startTs && c.ts <= v.endTs ).length;
+        return { x: v.total, y: handled, label: `${new Date(v.startTs).toISOString().slice(0,10)}→${new Date(v.endTs).toISOString().slice(0,10)}` };
+      });
+
+      // Regression (least squares)
+      const n = points.length;
+      const sumX = points.reduce((s,p)=>s+p.x,0);
+      const sumY = points.reduce((s,p)=>s+p.y,0);
+      const sumXY = points.reduce((s,p)=>s+p.x*p.y,0);
+      const sumX2 = points.reduce((s,p)=>s+p.x*p.x,0);
+      const meanX = sumX/n, meanY = sumY/n;
+      const denom = (n*sumX2 - sumX*sumX) || 1;
+      const slope = (n*sumXY - sumX*sumY) / denom;
+      const intercept = meanY - slope*meanX;
+
+      // Pearson r
+      const stdX = Math.sqrt(points.reduce((s,p)=>s+(p.x-meanX)**2,0)/n) || 0;
+      const stdY = Math.sqrt(points.reduce((s,p)=>s+(p.y-meanY)**2,0)/n) || 0;
+      const cov = points.reduce((s,p)=>s+(p.x-meanX)*(p.y-meanY),0)/n;
+      const r = (stdX && stdY) ? (cov/(stdX*stdY)) : 0;
+
+      const minX = Math.min(...points.map(p=>p.x));
+      const maxX = Math.max(...points.map(p=>p.x));
+      const regLine = [
+        {x:minX, y:slope*minX + intercept},
+        {x:maxX, y:slope*maxX + intercept}
+      ];
+
+      chartCorrelation = new Chart(ctx, {
+        type:'scatter',
+        data:{ datasets:[
+          { label:'Handled vs Incoming', data:points, backgroundColor:'rgba(79,70,229,.7)' },
+          { label:`Regression (r=${fmtNumber.format(r)})`, data:regLine, type:'line', borderColor:'#ef4444', backgroundColor:'#ef4444', pointRadius:0, borderWidth:2 }
+        ] },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          parsing:{ xAxisKey:'x', yAxisKey:'y' },
+          scales:{
+            x:{ beginAtZero:true, title:{display:true, text:'Incoming'} },
+            y:{ beginAtZero:true, title:{display:true, text:'Handled'} }
+          },
+          plugins:{ legend:{ position:'bottom' },
+            tooltip:{ callbacks:{ label: ctx=>{
+              const p = ctx.raw;
+              if (ctx.dataset.type==='line') return null;
+              return `${p.label}: ${p.x} vs ${p.y}`;
+            }}}
+          }
+        }
+      });
+    }
+
+    // ------------- Comparison -------------
+    $('#compareForm').addEventListener('submit', e=>{
+      e.preventDefault();
+      const aStart = $('#aStart').value, aEnd = $('#aEnd').value;
+      const bStart = $('#bStart').value, bEnd = $('#bEnd').value;
+
+      if (!(aStart && aEnd)) { alert('Please set Period A start and end.'); return; }
+
+      const aFrom = dateOnlyToStartISO(aStart), aTo = dateOnlyToEndISO(aEnd);
+      const bFrom = bStart && bEnd ? dateOnlyToStartISO(bStart) : null;
+      const bTo = bStart && bEnd ? dateOnlyToEndISO(bEnd) : null;
+
+      const inRange = (c, s, e)=> c.ts >= s && c.ts <= e;
+
+      const A = state.calls.filter(c=>inRange(c, aFrom, aTo));
+      const Ar = {
+        calls: A.length,
+        avg: A.length ? A.reduce((s,c)=>s+c.durationMin,0)/A.length : 0
+      };
+
+      let html = `<div class="small">
+        <div class="chips" style="margin:.4rem 0">
+          <span class="tag"><strong>${Ar.calls}</strong> <span class="muted">calls in A</span></span>
+          <span class="tag"><strong>${fmtNumber.format(Ar.avg)} min</strong> <span class="muted">avg in A</span></span>
+        </div>`;
+
+      if (bFrom && bTo){
+        const B = state.calls.filter(c=>inRange(c, bFrom, bTo));
+        const Br = {
+          calls: B.length,
+          avg: B.length ? B.reduce((s,c)=>s+c.durationMin,0)/B.length : 0
+        };
+        html += `
+          <div class="chips" style="margin:.4rem 0">
+            <span class="tag"><strong>${Br.calls}</strong> <span class="muted">calls in B</span></span>
+            <span class="tag"><strong>${fmtNumber.format(Br.avg)} min</strong> <span class="muted">avg in B</span></span>
+            <span class="tag"><strong>${Br.calls - Ar.calls}</strong> <span class="muted">Δ calls (B-A)</span></span>
+            <span class="tag"><strong>${fmtNumber.format(Br.avg - Ar.avg)} min</strong> <span class="muted">Δ avg dur</span></span>
+          </div>
+        `;
+      }
+      html += `</div>`;
+      $('#compareResult').innerHTML = html;
+    });
+
+    // ------------- Initial Rendering -------------
+    function renderAll(){
+      renderAgents();
+      renderAgentOptions();
+      renderOutcomes();
+      renderCallsFilters();
+      renderCallsList();
+      renderVolumes();
+      renderAllAnalytics();
+      mountManifest();
+    }
+    renderAll();
+
+    // ------------- Manifest & (optional) PWA SW helper -------------
+    function mountManifest(){
+      const manifest = {
+        name: "Agent Call Tracker Pro",
+        short_name: "CallTracker",
+        description: "Local, private call tracking and analytics.",
+        start_url: ".",
+        display: "standalone",
+        background_color: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || "#0f172a",
+        theme_color: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || "#0f172a",
+        icons: [
+          // Minimal maskable placeholder generated by runtime; kept empty to avoid external assets
+        ]
+      };
+      const link = $('#manifestLink');
+      const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+      link.href = URL.createObjectURL(blob);
+      // Note: Service worker must be a separate file served over HTTPS at same path.
+      // You can create "sw.js" with the following minimal content for offline:
+      // self.addEventListener('install', e=>{ self.skipWaiting() });
+      // self.addEventListener('activate', e=>{ clients.claim() });
+      // self.addEventListener('fetch', e=>{ e.respondWith(fetch(e.request).catch(()=>caches.match('index.html'))) });
+    }
+
+    // ------------- Keyboard tips -------------
+    document.addEventListener('keydown', (e)=>{
+      // A quick keyboard shortcut: Ctrl/Cmd+K to focus Add Call agent
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='k'){
+        e.preventDefault();
+        $('#callAgent').focus();
+      }
+    });
+
+    // ------------- Extra: Export service worker file (optional) -------------
+    // This helper lets you download a basic sw.js to place next to this HTML when hosting.
+    // Uncomment below if you want a visible button somewhere.
+    /*
+    const swBtn = document.createElement('button');
+    swBtn.textContent = 'Download service worker (sw.js)';
+    swBtn.className = 'ghost';
+    swBtn.addEventListener('click', ()=>{
+      const swSrc = `
+self.addEventListener('install', e=>{ self.skipWaiting() });
+self.addEventListener('activate', e=>{ clients.claim() });
+const CACHE = 'act-pro-v1';
+const CORE = ['.', location.href.split('#')[0].split('?')[0]];
+self.addEventListener('fetch', e=>{
+  const url = new URL(e.request.url);
+  if (e.request.method!=='GET') return;
+  e.respondWith(
+    caches.open(CACHE).then(cache=> cache.match(e.request).then(resp=>{
+      const fetcher = fetch(e.request).then(net=>{
+        cache.put(e.request, net.clone());
+        return net;
+      }).catch(()=>resp);
+      return resp || fetcher;
+    }))
+  );
+});
+`.trim();
+      const blob = new Blob([swSrc], {type:'text/javascript'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='sw.js'; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+    });
+    document.querySelector('footer').append(' ', swBtn);
+    */
+
+  </script>
+
+
+</body></html>
